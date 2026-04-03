@@ -1,1 +1,2 @@
-# EasyTalk-New
+# EasyTalk
+English Speaking Platform

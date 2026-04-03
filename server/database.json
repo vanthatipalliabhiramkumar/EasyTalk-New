@@ -1,0 +1,498 @@
+{
+  "users": [
+    {
+      "id": "guest-1",
+      "fullName": "Abhiram Kumar",
+      "email": "guest@easytalk.com",
+      "avatar": "https://ui-avatars.com/api/?name=Guest+User&background=4F46E5&color=fff&size=100",
+      "streak": 0,
+      "totalCalls": 0,
+      "totalMinutes": 0,
+      "totalMessages": 0,
+      "challengesCompleted": 0,
+      "isOnline": true,
+      "createdAt": "2026-03-24T14:34:21.575Z"
+    }
+  ],
+  "messages": [],
+  "calls": [],
+  "challenges": [],
+  "userChallenges": [],
+  "aiConversations": [
+    {
+      "id": "bc6fa04d-22ec-4ec4-9f56-c830d73b6b49",
+      "user": "guest-1",
+      "title": "hii",
+      "messages": [
+        {
+          "role": "user",
+          "content": "hii",
+          "timestamp": "2026-03-24T14:38:31.782Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Hello Guest User! How can I help you practice English today?",
+          "timestamp": "2026-03-24T14:38:31.782Z"
+        }
+      ],
+      "createdAt": "2026-03-24T14:38:31.782Z",
+      "updatedAt": "2026-03-24T14:38:31.782Z"
+    },
+    {
+      "id": "13925aef-662c-487a-b708-bc1011514335",
+      "user": "guest-1",
+      "title": "i want to learn tenses",
+      "messages": [
+        {
+          "role": "user",
+          "content": "i want to learn tenses",
+          "timestamp": "2026-03-24T14:38:51.079Z"
+        },
+        {
+          "role": "assistant",
+          "content": "You're doing great! Let's continue practicing. What topic interests you?",
+          "timestamp": "2026-03-24T14:38:51.079Z"
+        }
+      ],
+      "createdAt": "2026-03-24T14:38:51.079Z",
+      "updatedAt": "2026-03-24T14:38:51.079Z"
+    },
+    {
+      "id": "36b0d13d-a3c9-4daf-bce4-f878fb16f752",
+      "user": "guest-1",
+      "title": "help me learning tenses",
+      "messages": [
+        {
+          "role": "user",
+          "content": "help me learning tenses",
+          "timestamp": "2026-03-24T14:39:06.018Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Excellent point! Would you like to practice some exercises or just chat?",
+          "timestamp": "2026-03-24T14:39:06.018Z"
+        }
+      ],
+      "createdAt": "2026-03-24T14:39:06.018Z",
+      "updatedAt": "2026-03-24T14:39:06.018Z"
+    },
+    {
+      "id": "2b0e9cce-7eff-40dd-9c2e-97fd13a5539d",
+      "user": "guest-1",
+      "title": "yes",
+      "messages": [
+        {
+          "role": "user",
+          "content": "yes",
+          "timestamp": "2026-03-24T14:39:14.633Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Keep up the great work, Guest User! What else would you like to learn?",
+          "timestamp": "2026-03-24T14:39:14.633Z"
+        }
+      ],
+      "createdAt": "2026-03-24T14:39:14.633Z",
+      "updatedAt": "2026-03-24T14:39:14.633Z"
+    },
+    {
+      "id": "db315038-dbed-4702-9acb-05225a1ab1d5",
+      "user": "guest-1",
+      "title": "lets talk on topic college",
+      "messages": [
+        {
+          "role": "user",
+          "content": "lets talk on topic college",
+          "timestamp": "2026-03-24T14:39:40.584Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Keep up the great work, Guest User! What else would you like to learn?",
+          "timestamp": "2026-03-24T14:39:40.584Z"
+        }
+      ],
+      "createdAt": "2026-03-24T14:39:40.584Z",
+      "updatedAt": "2026-03-24T14:39:40.584Z"
+    },
+    {
+      "id": "b635c17e-c184-4041-bb48-aff1190c8dcb",
+      "user": "guest-1",
+      "title": "hello",
+      "messages": [
+        {
+          "role": "user",
+          "content": "hello",
+          "timestamp": "2026-03-24T14:45:45.582Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Hello Guest User! How can I help you practice English today?",
+          "timestamp": "2026-03-24T14:45:45.582Z"
+        }
+      ],
+      "createdAt": "2026-03-24T14:45:45.582Z",
+      "updatedAt": "2026-03-24T14:45:45.582Z"
+    },
+    {
+      "id": "aaeac689-381e-45b0-97fa-90ea93a8cd08",
+      "user": "guest-1",
+      "title": "i want to learn tenses",
+      "messages": [
+        {
+          "role": "user",
+          "content": "i want to learn tenses",
+          "timestamp": "2026-03-24T14:46:01.582Z"
+        },
+        {
+          "role": "assistant",
+          "content": "That's interesting, Guest User! Can you tell me more about that?",
+          "timestamp": "2026-03-24T14:46:01.582Z"
+        }
+      ],
+      "createdAt": "2026-03-24T14:46:01.582Z",
+      "updatedAt": "2026-03-24T14:46:01.582Z"
+    },
+    {
+      "id": "7ec3418b-3cad-4421-8784-0849ee4ae552",
+      "user": "guest-1",
+      "title": "no",
+      "messages": [
+        {
+          "role": "user",
+          "content": "no",
+          "timestamp": "2026-03-24T14:46:10.449Z"
+        },
+        {
+          "role": "assistant",
+          "content": "I'm here to help you improve your English! We can practice grammar, vocabulary, or just have a conversation.",
+          "timestamp": "2026-03-24T14:46:10.449Z"
+        }
+      ],
+      "createdAt": "2026-03-24T14:46:10.449Z",
+      "updatedAt": "2026-03-24T14:46:10.449Z"
+    },
+    {
+      "id": "399b144d-496f-4b4e-8c5b-f409e09b91cc",
+      "user": "guest-1",
+      "title": "ok tell me",
+      "messages": [
+        {
+          "role": "user",
+          "content": "ok tell me",
+          "timestamp": "2026-03-24T14:46:20.913Z"
+        },
+        {
+          "role": "assistant",
+          "content": "That's a good question. Let me help you with that. Can you give me more context?",
+          "timestamp": "2026-03-24T14:46:20.913Z"
+        }
+      ],
+      "createdAt": "2026-03-24T14:46:20.913Z",
+      "updatedAt": "2026-03-24T14:46:20.913Z"
+    },
+    {
+      "id": "6a7028cf-b93c-47da-83f4-46bd76941c08",
+      "user": "guest-1",
+      "title": "ok",
+      "messages": [
+        {
+          "role": "user",
+          "content": "ok",
+          "timestamp": "2026-03-24T14:46:25.900Z"
+        },
+        {
+          "role": "assistant",
+          "content": "That's a good question. Let me help you with that. Can you give me more context?",
+          "timestamp": "2026-03-24T14:46:25.900Z"
+        }
+      ],
+      "createdAt": "2026-03-24T14:46:25.900Z",
+      "updatedAt": "2026-03-24T14:46:25.900Z"
+    },
+    {
+      "id": "4ab6e91a-54af-4db5-b42a-283017bbbb37",
+      "user": "guest-1",
+      "title": "ok help me",
+      "messages": [
+        {
+          "role": "user",
+          "content": "ok help me",
+          "timestamp": "2026-03-24T14:46:37.659Z"
+        },
+        {
+          "role": "assistant",
+          "content": "I'm here to help you improve your English! We can practice grammar, vocabulary, or just have a conversation.",
+          "timestamp": "2026-03-24T14:46:37.659Z"
+        }
+      ],
+      "createdAt": "2026-03-24T14:46:37.659Z",
+      "updatedAt": "2026-03-24T14:46:37.659Z"
+    },
+    {
+      "id": "8450197a-c4b2-4f4b-aed8-94672bbb6111",
+      "user": "guest-1",
+      "title": "hiii",
+      "messages": [
+        {
+          "role": "user",
+          "content": "hiii",
+          "timestamp": "2026-03-24T14:53:05.279Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Hello Guest User! How can I help you practice English today?",
+          "timestamp": "2026-03-24T14:53:05.279Z"
+        }
+      ],
+      "createdAt": "2026-03-24T14:53:05.279Z",
+      "updatedAt": "2026-03-24T14:53:05.279Z"
+    },
+    {
+      "id": "d6610ecb-cffa-4c45-af0d-4af56b77f6dc",
+      "user": "guest-1",
+      "title": "\"What's the difference between...",
+      "messages": [
+        {
+          "role": "user",
+          "content": "\"What's the difference between 'affect' and 'effect'?\"",
+          "timestamp": "2026-03-24T14:53:38.639Z"
+        },
+        {
+          "role": "assistant",
+          "content": "You're doing great! Let's continue practicing. What topic interests you?",
+          "timestamp": "2026-03-24T14:53:38.639Z"
+        }
+      ],
+      "createdAt": "2026-03-24T14:53:38.639Z",
+      "updatedAt": "2026-03-24T14:53:38.639Z"
+    },
+    {
+      "id": "5fbaca61-0293-43da-8690-9b0f9f5ae479",
+      "user": "guest-1",
+      "title": "\"What's the difference between...",
+      "messages": [
+        {
+          "role": "user",
+          "content": "\"What's the difference between 'affect' and 'effect'?\"",
+          "timestamp": "2026-03-24T14:53:49.860Z"
+        },
+        {
+          "role": "assistant",
+          "content": "That's interesting, Guest User! Can you tell me more about that?",
+          "timestamp": "2026-03-24T14:53:49.860Z"
+        }
+      ],
+      "createdAt": "2026-03-24T14:53:49.860Z",
+      "updatedAt": "2026-03-24T14:53:49.860Z"
+    },
+    {
+      "id": "6ae549da-e80f-4811-a479-b125d2e3990f",
+      "user": "guest-1",
+      "title": "hello",
+      "messages": [
+        {
+          "role": "user",
+          "content": "hello",
+          "timestamp": "2026-03-24T14:58:49.742Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Hello Abhiram Kumar! How can I help you practice English today?",
+          "timestamp": "2026-03-24T14:58:49.742Z"
+        }
+      ],
+      "createdAt": "2026-03-24T14:58:49.742Z",
+      "updatedAt": "2026-03-24T14:58:49.742Z"
+    },
+    {
+      "id": "754886ec-3600-47f2-bfc7-cd221927055a",
+      "user": "guest-1",
+      "title": "tenses",
+      "messages": [
+        {
+          "role": "user",
+          "content": "tenses",
+          "timestamp": "2026-03-24T14:59:00.022Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Great question! Let's practice your English skills. What specific area would you like to focus on?",
+          "timestamp": "2026-03-24T14:59:00.022Z"
+        }
+      ],
+      "createdAt": "2026-03-24T14:59:00.022Z",
+      "updatedAt": "2026-03-24T14:59:00.022Z"
+    },
+    {
+      "id": "da45efc9-3ee2-4817-b227-6faea1bf713c",
+      "user": "guest-1",
+      "title": "tenses",
+      "messages": [
+        {
+          "role": "user",
+          "content": "tenses",
+          "timestamp": "2026-03-24T14:59:26.258Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Great question! Let's practice your English skills. What specific area would you like to focus on?",
+          "timestamp": "2026-03-24T14:59:26.258Z"
+        }
+      ],
+      "createdAt": "2026-03-24T14:59:26.258Z",
+      "updatedAt": "2026-03-24T14:59:26.258Z"
+    },
+    {
+      "id": "13baff4a-576e-4d51-b9a1-6893c074e7e0",
+      "user": "guest-1",
+      "title": "i want to learn vocabulary",
+      "messages": [
+        {
+          "role": "user",
+          "content": "i want to learn vocabulary",
+          "timestamp": "2026-03-24T14:59:55.473Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Learning new words is fun! Here's a word: \"Excellent\" - meaning very good. Can you use it in a sentence?",
+          "timestamp": "2026-03-24T14:59:55.473Z"
+        }
+      ],
+      "createdAt": "2026-03-24T14:59:55.473Z",
+      "updatedAt": "2026-03-24T14:59:55.473Z"
+    },
+    {
+      "id": "b44efb23-ccad-4e8a-9193-87077989c7a4",
+      "user": "guest-1",
+      "title": "next",
+      "messages": [
+        {
+          "role": "user",
+          "content": "next",
+          "timestamp": "2026-03-24T15:00:04.814Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Great question! Let's practice your English skills. What specific area would you like to focus on?",
+          "timestamp": "2026-03-24T15:00:04.814Z"
+        }
+      ],
+      "createdAt": "2026-03-24T15:00:04.814Z",
+      "updatedAt": "2026-03-24T15:00:04.814Z"
+    },
+    {
+      "id": "4beca713-d1a4-4b82-ad39-35ba8b41adc7",
+      "user": "guest-1",
+      "title": "more new words to learn",
+      "messages": [
+        {
+          "role": "user",
+          "content": "more new words to learn",
+          "timestamp": "2026-03-24T15:00:18.439Z"
+        },
+        {
+          "role": "assistant",
+          "content": "I'm here to help you improve your English! We can practice grammar, vocabulary, or just have a conversation.",
+          "timestamp": "2026-03-24T15:00:18.439Z"
+        }
+      ],
+      "createdAt": "2026-03-24T15:00:18.439Z",
+      "updatedAt": "2026-03-24T15:00:18.439Z"
+    },
+    {
+      "id": "ee519d02-370f-4005-8eb7-635dd7d9e8f6",
+      "user": "guest-1",
+      "title": "vocabulary",
+      "messages": [
+        {
+          "role": "user",
+          "content": "vocabulary",
+          "timestamp": "2026-03-24T15:00:31.852Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Learning new words is fun! Here's a word: \"Excellent\" - meaning very good. Can you use it in a sentence?",
+          "timestamp": "2026-03-24T15:00:31.852Z"
+        }
+      ],
+      "createdAt": "2026-03-24T15:00:31.852Z",
+      "updatedAt": "2026-03-24T15:00:31.852Z"
+    },
+    {
+      "id": "172b31d2-1dd4-4b94-8efb-7b3e562504bc",
+      "user": "guest-1",
+      "title": "grammer",
+      "messages": [
+        {
+          "role": "user",
+          "content": "grammer",
+          "timestamp": "2026-03-24T15:00:44.571Z"
+        },
+        {
+          "role": "assistant",
+          "content": "That's a good question. Let me help you with that. Can you give me more context?",
+          "timestamp": "2026-03-24T15:00:44.571Z"
+        }
+      ],
+      "createdAt": "2026-03-24T15:00:44.571Z",
+      "updatedAt": "2026-03-24T15:00:44.571Z"
+    },
+    {
+      "id": "97fcc017-6357-41ff-a6f7-2ceec2d57fc3",
+      "user": "guest-1",
+      "title": "grammer",
+      "messages": [
+        {
+          "role": "user",
+          "content": "grammer",
+          "timestamp": "2026-03-24T15:00:53.112Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Excellent point! Would you like to practice some exercises or just chat?",
+          "timestamp": "2026-03-24T15:00:53.112Z"
+        }
+      ],
+      "createdAt": "2026-03-24T15:00:53.112Z",
+      "updatedAt": "2026-03-24T15:00:53.112Z"
+    },
+    {
+      "id": "1397e8b0-df7f-4c7f-88aa-35306abdf236",
+      "user": "guest-1",
+      "title": "some exercises",
+      "messages": [
+        {
+          "role": "user",
+          "content": "some exercises",
+          "timestamp": "2026-03-24T15:01:15.703Z"
+        },
+        {
+          "role": "assistant",
+          "content": "I'm here to help you improve your English! We can practice grammar, vocabulary, or just have a conversation.",
+          "timestamp": "2026-03-24T15:01:15.703Z"
+        }
+      ],
+      "createdAt": "2026-03-24T15:01:15.703Z",
+      "updatedAt": "2026-03-24T15:01:15.703Z"
+    },
+    {
+      "id": "2df32e4a-0019-4cff-8e1d-63434d08bd32",
+      "user": "guest-1",
+      "title": "vocabulary",
+      "messages": [
+        {
+          "role": "user",
+          "content": "vocabulary",
+          "timestamp": "2026-03-24T15:34:15.621Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Learning new words is fun! Here's a word: \"Excellent\" - meaning very good. Can you use it in a sentence?",
+          "timestamp": "2026-03-24T15:34:15.621Z"
+        }
+      ],
+      "createdAt": "2026-03-24T15:34:15.621Z",
+      "updatedAt": "2026-03-24T15:34:15.621Z"
+    }
+  ]
+}
