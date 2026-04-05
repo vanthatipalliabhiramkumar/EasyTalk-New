@@ -1,7 +1,11 @@
 import { io } from 'socket.io-client';
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000';
+//const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000';
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL;
 
+if (!SOCKET_URL) {
+  console.error("❌ VITE_SOCKET_URL not set!");
+}
 let socket = null;
 
 export const initializeSocket = (token) => {
