@@ -10,7 +10,10 @@ import LoadingSpinner from '../components/common/LoadingSpinner';
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement);
 
 const Dashboard = () => {
-  const { user, token } = useAuth();
+ // const { user, token } = useAuth();
+  const auth = useAuth();
+const user = auth?.user;
+const token = auth?.token;
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalCalls: 0,
