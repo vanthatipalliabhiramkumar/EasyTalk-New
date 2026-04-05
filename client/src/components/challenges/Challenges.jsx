@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import axios from 'axios';
+//import axios from 'axios';
 import { FaTrophy, FaStar, FaCalendar, FaCheckCircle, FaClock } from 'react-icons/fa';
 import LoadingSpinner from '../common/LoadingSpinner';
 import toast from 'react-hot-toast';
 import Sidebar from '../layout/Sidebar';
 import ChallengeCard from './ChallengeCard';
-
+import api from '../../utils/api';
 const Challenges = () => {
   const { user } = useAuth();
   const [challenges, setChallenges] = useState([]);
@@ -23,7 +23,7 @@ const Challenges = () => {
 
   const fetchChallenges = async () => {
     try {
-      const response = await axios.get('/api/challenges');
+      const response = await api.get('/api/challenges');
       setChallenges(response.data.challenges);
     } catch (error) {
       console.error('Fetch challenges error:', error);
@@ -33,7 +33,7 @@ const Challenges = () => {
 
   const fetchDailyChallenge = async () => {
     try {
-      const response = await axios.get('/api/challenges/daily');
+      const response = await api.get('/api/challenges/daily');
       setDailyChallenge(response.data.challenge);
     } catch (error) {
       console.error('Fetch daily challenge error:', error);
@@ -42,7 +42,7 @@ const Challenges = () => {
 
   const fetchProgress = async () => {
     try {
-      const response = await axios.get('/api/challenges/progress');
+      const response = await api.get('/api/challenges/progress');
       setProgress(response.data.stats);
     } catch (error) {
       console.error('Fetch progress error:', error);
@@ -53,7 +53,7 @@ const Challenges = () => {
 
   const startChallenge = async (challengeId) => {
     try {
-      await axios.post(`/api/challenges/${challengeId}/start`);
+      await api.post(`/api/challenges/${challengeId}/start`);
       toast.success('Challenge started!');
       fetchChallenges();
     } catch (error) {
@@ -64,7 +64,7 @@ const Challenges = () => {
 
   const submitChallenge = async (challengeId, response) => {
     try {
-      const result = await axios.post(`/api/challenges/${challengeId}/submit`, { response });
+      const result = await api.post(`/api/challenges/${challengeId}/submit`, { response });
       toast.success(`Score: ${result.data.score} - ${result.data.feedback}`);
       fetchChallenges();
       fetchProgress();
