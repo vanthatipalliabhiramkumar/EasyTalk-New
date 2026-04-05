@@ -24,7 +24,8 @@ export const SocketProvider = ({ children }) => {
     console.log('🔌 Creating socket connection for user:', user.name, 'ID:', user.id);
 
     //const socketUrl = 'http://localhost:5000';
-    const socketUrl = import.meta.env.VITE_API_URL;
+    //const socketUrl = import.meta.env.VITE_API_URL;
+    const socketUrl = import.meta.env.VITE_SOCKET_URL;
     const newSocket = io(socketUrl, {
       transports: ['websocket', 'polling'],
       reconnection: true,
