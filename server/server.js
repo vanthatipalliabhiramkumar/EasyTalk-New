@@ -20,8 +20,12 @@ const io = socketIo(server, {
 });
 
 // Middleware
+// app.use(cors({
+//   origin: ['http://localhost:5173', 'http://localhost:3000'],
+//   credentials: true
+// }));
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:3000'],
+  origin: "*",
   credentials: true
 }));
 app.use(express.json());
@@ -31,7 +35,7 @@ const dbPath = path.join(__dirname, 'easytalk.db');
 
 if (fs.existsSync(dbPath)) {
   console.log('🗑️  Deleting old database...');
-  fs.unlinkSync(dbPath);
+ // fs.unlinkSync(dbPath);
 }
 
 const db = new sqlite3.Database(dbPath, (err) => {
@@ -149,7 +153,7 @@ const allQuery = (sql, params = []) => {
   });
 };
 
-const JWT_SECRET = 'your-super-secret-key-2024';
+const JWT_SECRET = process.env.JWT_SECRET;
 
 // Store online users and queues
 const onlineUsers = new Map();
