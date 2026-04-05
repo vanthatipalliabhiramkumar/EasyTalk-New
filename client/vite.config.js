@@ -21,10 +21,10 @@ export default defineConfig({
       }
     }
   },
-  define: {
-    global: 'globalThis',
-    'process.env': {}
-  },
+  // define: {
+  //   global: 'globalThis',
+  //   'process.env': {}
+  // },
   optimizeDeps: {
     include: ['simple-peer', 'socket.io-client', 'react-hot-toast']
   }
