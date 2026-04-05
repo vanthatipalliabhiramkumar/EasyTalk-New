@@ -34,29 +34,50 @@ export const AuthProvider = ({ children }) => {
   }, [token]);
 
   // Load user on initial load
+  // useEffect(() => {
+  //   if (token) {
+  //     loadUser();
+  //   } else {
+  //     setLoading(false);
+  //   }
+  // }, [token]);
   useEffect(() => {
-    if (token) {
-      loadUser();
-    } else {
-      setLoading(false);
-    }
-  }, [token]);
+  setLoading(false);   // TEMP FIX
+}, []);
 
+  // const loadUser = async () => {
+  //   try {
+  //     const response = await axios.get('/api/auth/me');
+  //     const userData = response.data.user;
+  //     console.log('✅ User loaded from server:', userData);
+  //     setUser(userData);
+  //   } catch (error) {
+  //     console.error('Load user error:', error.response?.data || error.message);
+  //     localStorage.removeItem('token');
+  //     setToken(null);
+  //     setUser(null);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
   const loadUser = async () => {
-    try {
-      const response = await axios.get('/api/auth/me');
-      const userData = response.data.user;
-      console.log('✅ User loaded from server:', userData);
-      setUser(userData);
-    } catch (error) {
-      console.error('Load user error:', error.response?.data || error.message);
-      localStorage.removeItem('token');
-      setToken(null);
-      setUser(null);
-    } finally {
-      setLoading(false);
+  try {
+    const response = await axios.get('/api/auth/me');
+
+    if (!response?.data?.user) {
+      console.log("No user data");
+      return;
     }
-  };
+
+    setUser(response.data.user);
+
+  } catch (error) {
+    console.log("API failed safely");
+    setUser(null);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const register = async (userData) => {
     try {
