@@ -62,7 +62,7 @@ export const AuthProvider = ({ children }) => {
   // };
   const loadUser = async () => {
   try {
-    const response = await axios.get('/auth/me');
+    const response = await axios.get('/api/auth/me');
 
     if (!response?.data?.user) {
       console.log("No user data");
@@ -82,7 +82,7 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     try {
       console.log('📝 Registering user:', userData.email);
-      const response = await axios.post('/auth/register', {
+      const response = await axios.post('/api/auth/register', {
         name: userData.fullName,
         email: userData.email,
         password: userData.password,
@@ -107,7 +107,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       console.log('🔐 Attempting login:', email);
-      const response = await axios.post('/auth/login', { email, password });
+      const response = await axios.post('/api/auth/login', { email, password });
       
       const { token: newToken, user } = response.data;
       
@@ -131,7 +131,7 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       if (token) {
-        await axios.post('/auth/logout');
+        await axios.post('/api/auth/logout');
       }
     } catch (error) {
       console.error('Logout error:', error);
