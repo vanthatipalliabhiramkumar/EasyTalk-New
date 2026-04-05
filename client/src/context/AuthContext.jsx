@@ -34,24 +34,24 @@ export const AuthProvider = ({ children }) => {
   }, [token]);
 
   // Load user on initial load
-  // useEffect(() => {
-  //   if (token) {
-  //     loadUser();
-  //   } else {
-  //     setLoading(false);
-  //   }
-  // }, [token]);
+   useEffect(() => {
+     if (token) {
+     loadUser();
+     } else {
+       setLoading(false);
+     }
+  }, [token]);
   useEffect(() => {
   setLoading(false);   // TEMP FIX
 }, []);
 
-  // const loadUser = async () => {
-  //   try {
-  //     const response = await axios.get('/api/auth/me');
-  //     const userData = response.data.user;
-  //     console.log('✅ User loaded from server:', userData);
-  //     setUser(userData);
-  //   } catch (error) {
+   // const loadUser = async () => {
+   //   try {
+   //     const response = await axios.get('/api/auth/me');
+   //     const userData = response.data.user;
+   //     console.log('✅ User loaded from server:', userData);
+   //     setUser(userData);
+   //   } catch (error) {
   //     console.error('Load user error:', error.response?.data || error.message);
   //     localStorage.removeItem('token');
   //     setToken(null);
@@ -62,7 +62,7 @@ export const AuthProvider = ({ children }) => {
   // };
   const loadUser = async () => {
   try {
-    const response = await axios.get('/api/auth/me');
+    const response = await axios.get('/auth/me');
 
     if (!response?.data?.user) {
       console.log("No user data");
@@ -82,7 +82,7 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     try {
       console.log('📝 Registering user:', userData.email);
-      const response = await axios.post('/api/auth/register', {
+      const response = await axios.post('/auth/register', {
         name: userData.fullName,
         email: userData.email,
         password: userData.password,
@@ -107,7 +107,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       console.log('🔐 Attempting login:', email);
-      const response = await axios.post('/api/auth/login', { email, password });
+      const response = await axios.post('/auth/login', { email, password });
       
       const { token: newToken, user } = response.data;
       
@@ -131,7 +131,7 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       if (token) {
-        await axios.post('/api/auth/logout');
+        await axios.post('/auth/logout');
       }
     } catch (error) {
       console.error('Logout error:', error);
