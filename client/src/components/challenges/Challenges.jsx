@@ -6,7 +6,7 @@ import LoadingSpinner from '../common/LoadingSpinner';
 import toast from 'react-hot-toast';
 import Sidebar from '../layout/Sidebar';
 import ChallengeCard from './ChallengeCard';
-import api from '../../utils/api';
+import api from '../../../utils/api';
 const Challenges = () => {
   const { user } = useAuth();
   const [challenges, setChallenges] = useState([]);
