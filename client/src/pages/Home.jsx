@@ -7,8 +7,17 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 
 const Home = () => {
-  const { user, logout } = useAuth();
-  const { socket, isConnected, onlineUsers } = useSocket();
+  // const { user, logout } = useAuth();
+  // const { socket, isConnected, onlineUsers } = useSocket();
+  const auth = useAuth();
+const socketData = useSocket();
+
+const user = auth?.user;
+const logout = auth?.logout;
+
+const socket = socketData?.socket;
+const isConnected = socketData?.isConnected;
+const onlineUsers = socketData?.onlineUsers || [];
   const navigate = useNavigate();
   const [stats, setStats] = useState({
     totalCalls: 0,
@@ -23,7 +32,7 @@ const Home = () => {
 
   const fetchStats = async () => {
     try {
-      const response = await axios.get('/api/challenges/progress');
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/challenges/progress`);
       setStats(prev => ({
         ...prev,
         challengesCompleted: response.data.stats?.totalCompleted || 0
