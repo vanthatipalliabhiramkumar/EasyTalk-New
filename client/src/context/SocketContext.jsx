@@ -37,7 +37,7 @@ export const SocketProvider = ({ children }) => {
       setIsConnected(true);
       
       newSocket.emit('user_connected', {
-        userId: user._id,
+        userId: user.id,
         userName: user.name,
         userAvatar: user.avatar
       });
