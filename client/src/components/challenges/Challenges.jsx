@@ -1,466 +1,114 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '../../context/AuthContext';
-import { useSocket } from '../../context/SocketContext';
-import { useCall } from '../../context/CallContext';
-import { Award, Clock, Target, TrendingUp, CheckCircle, PlayCircle, Loader2, Calendar, Star, Flame, Mic, Video, Phone, X } from 'lucide-react';
-import toast from 'react-hot-toast';
+// Get user's challenge progress
+app.get('/api/user-challenges', authMiddleware, async (req, res) => {
+  try {
+    const challenges = await allQuery(
+      'SELECT * FROM user_challenges WHERE user_id = ?',
+      [req.user.id]
+    );
+    res.json({ success: true, challenges });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
 
-const Challenges = () => {
-  const { user, token } = useAuth();
-  const { socket } = useSocket();
-  const { initiateCall } = useCall();
-  
-  const [challenges, setChallenges] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({
-    totalCompleted: 0,
-    totalPoints: 0,
-    currentStreak: 0,
-    totalMinutes: 0,
-    level: 'Beginner'
-  });
-  const [selectedChallenge, setSelectedChallenge] = useState(null);
-  const [showCallModal, setShowCallModal] = useState(false);
-  const [progressUpdate, setProgressUpdate] = useState({ show: false, challengeId: null, progress: 0 });
+// Get all challenges
+app.get('/api/challenges', authMiddleware, async (req, res) => {
+  try {
+    const challenges = await allQuery('SELECT * FROM challenges ORDER BY target_value ASC');
+    res.json({ success: true, challenges });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
 
-  // Get the correct API URL based on environment
-  const getApiUrl = () => {
-    // For production (Render)
-    if (process.env.NODE_ENV === 'production') {
-      return 'https://easytalk-new.onrender.com';
+// Start a challenge
+app.post('/api/challenges/:challengeId/start', authMiddleware, async (req, res) => {
+  try {
+    const { challengeId } = req.params;
+    const existing = await getQuery(
+      'SELECT * FROM user_challenges WHERE user_id = ? AND challenge_id = ?',
+      [req.user.id, challengeId]
+    );
+    
+    if (!existing) {
+      await runQuery(
+        'INSERT INTO user_challenges (id, user_id, challenge_id, status, started_at) VALUES (?, ?, ?, ?, ?)',
+        [uuidv4(), req.user.id, challengeId, 'in_progress', new Date().toISOString()]
+      );
     }
-    // For development (local)
-    return 'http://localhost:5000';
-  };
+    res.json({ success: true, message: 'Challenge started!' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
 
-  const API_URL = getApiUrl();
-
-  // Fetch challenges
-  const fetchChallenges = useCallback(async () => {
-    try {
-      const response = await fetch(`${API_URL}/api/challenges`, {
-        headers: { 
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      const data = await response.json();
-      if (data.success) {
-        setChallenges(data.challenges);
-      } else {
-        console.error('Failed to fetch challenges:', data.message);
-      }
-    } catch (error) {
-      console.error('Error fetching challenges:', error);
-      toast.error('Failed to load challenges');
-    }
-  }, [token, API_URL]);
-
-  // Fetch progress
-  const fetchProgress = useCallback(async () => {
-    try {
-      const response = await fetch(`${API_URL}/api/challenges/progress`, {
-        headers: { 
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      const data = await response.json();
-      if (data.success) {
-        setStats(data.stats);
-      }
-    } catch (error) {
-      console.error('Error fetching progress:', error);
-    }
-  }, [token, API_URL]);
-
-  useEffect(() => {
-    const loadData = async () => {
-      setLoading(true);
-      await Promise.all([fetchChallenges(), fetchProgress()]);
-      setLoading(false);
-    };
-    loadData();
-  }, [fetchChallenges, fetchProgress]);
-
-  // Socket listeners for call matching
-  useEffect(() => {
-    if (!socket) return;
-
-    const handleCallMatchFound = (data) => {
-      toast.dismiss('call-queue');
-      toast.success(`Matched with ${data.partnerName}! Starting challenge...`);
-      // Start the call for challenge
-      initiateCall(data.partnerId, 'video', data.partnerName, data.partnerAvatar);
-      setShowCallModal(false);
-    };
-
-    const handleWaitingForPartner = ({ type }) => {
-      if (type === 'call') {
-        toast.loading('Looking for a practice partner...', { id: 'call-queue' });
-      }
-    };
-
-    socket.on('call_match_found', handleCallMatchFound);
-    socket.on('waiting_for_partner', handleWaitingForPartner);
-
-    return () => {
-      socket.off('call_match_found', handleCallMatchFound);
-      socket.off('waiting_for_partner', handleWaitingForPartner);
-    };
-  }, [socket, initiateCall]);
-
-  // Start a challenge
-  const handleStartChallenge = async (challengeId) => {
-    try {
-      const response = await fetch(`${API_URL}/api/challenges/${challengeId}/start`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      const data = await response.json();
-      if (data.success) {
-        toast.success('Challenge started! Find a partner to practice with.');
-        const challenge = challenges.find(c => c.id === challengeId);
-        setSelectedChallenge(challenge);
-        setShowCallModal(true);
-        await fetchChallenges();
-      } else {
-        toast.error(data.message || 'Failed to start challenge');
-      }
-    } catch (error) {
-      console.error('Error starting challenge:', error);
-      toast.error('Failed to start challenge');
-    }
-  };
-
-  // Update challenge progress
-  const handleUpdateProgress = async (challengeId, currentProgress) => {
-    try {
-      const response = await fetch(`${API_URL}/api/challenges/${challengeId}/progress`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ currentProgress })
-      });
-      const data = await response.json();
-      if (data.success) {
-        if (data.completed) {
-          toast.success(`🎉 Challenge completed! You earned ${data.pointsEarned} points!`);
-          await fetchProgress();
-        } else {
-          toast.success('Progress updated! Keep going!');
-        }
-        await fetchChallenges();
-        setProgressUpdate({ show: false, challengeId: null, progress: 0 });
-      }
-    } catch (error) {
-      console.error('Error updating progress:', error);
-      toast.error('Failed to update progress');
-    }
-  };
-
-  // Find practice partner
-  const findPracticePartner = () => {
-    if (!socket) {
-      toast.error('Connecting to server...');
-      return;
+// Update challenge progress
+app.post('/api/challenges/:challengeId/progress', authMiddleware, async (req, res) => {
+  try {
+    const { challengeId } = req.params;
+    const { currentProgress } = req.body;
+    
+    const challenge = await getQuery('SELECT * FROM challenges WHERE id = ?', [challengeId]);
+    if (!challenge) {
+      return res.status(404).json({ success: false, message: 'Challenge not found' });
     }
     
-    toast.loading('Finding a practice partner...', { id: 'call-queue' });
-    socket.emit('join_call_queue', {
-      userId: user.id,
-      userName: user.name,
-      userAvatar: user.avatar
-    });
-  };
-
-  // Cancel finding partner
-  const cancelFindPartner = () => {
-    if (socket) {
-      socket.emit('cancel_queue', { userId: user.id, type: 'call' });
-      toast.dismiss('call-queue');
-      toast('Cancelled');
-    }
-    setShowCallModal(false);
-    setSelectedChallenge(null);
-  };
-
-  // Get difficulty color
-  const getDifficultyColor = (difficulty) => {
-    switch (difficulty) {
-      case 'beginner': return 'bg-green-100 text-green-700';
-      case 'intermediate': return 'bg-yellow-100 text-yellow-700';
-      case 'advanced': return 'bg-red-100 text-red-700';
-      default: return 'bg-gray-100 text-gray-700';
-    }
-  };
-
-  // Get progress percentage
-  const getProgressPercentage = (challenge) => {
-    if (!challenge.userProgress) return 0;
-    const progress = challenge.userProgress.current_progress || 0;
-    const target = challenge.target_value;
-    return Math.min((progress / target) * 100, 100);
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin text-purple-600 mx-auto mb-4" />
-          <p className="text-gray-600">Loading challenges...</p>
-        </div>
-      </div>
+    const isCompleted = currentProgress >= challenge.target_value;
+    
+    await runQuery(
+      `UPDATE user_challenges SET current_progress = ?, status = ?, completed_at = ? 
+       WHERE user_id = ? AND challenge_id = ?`,
+      [currentProgress, isCompleted ? 'completed' : 'in_progress', 
+       isCompleted ? new Date().toISOString() : null, req.user.id, challengeId]
     );
+    
+    if (isCompleted) {
+      await runQuery(
+        'UPDATE users SET points = points + ?, streak = streak + 1 WHERE id = ?',
+        [challenge.points, req.user.id]
+      );
+    }
+    
+    res.json({ 
+      success: true, 
+      completed: isCompleted, 
+      pointsEarned: isCompleted ? challenge.points : 0 
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
+});
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
-            Speaking Challenges
-          </h1>
-          <p className="text-gray-600">Complete challenges to improve your English and earn rewards!</p>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-          <div className="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-sm">Completed</p>
-                <p className="text-2xl font-bold text-green-600">{stats.totalCompleted}</p>
-              </div>
-              <CheckCircle className="w-8 h-8 text-green-400" />
-            </div>
-          </div>
-          <div className="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-sm">Total Points</p>
-                <p className="text-2xl font-bold text-yellow-600">{stats.totalPoints}</p>
-              </div>
-              <Star className="w-8 h-8 text-yellow-400" />
-            </div>
-          </div>
-          <div className="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-sm">Current Streak</p>
-                <p className="text-2xl font-bold text-orange-600">{stats.currentStreak} days</p>
-              </div>
-              <Flame className="w-8 h-8 text-orange-400" />
-            </div>
-          </div>
-          <div className="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-sm">Total Minutes</p>
-                <p className="text-2xl font-bold text-blue-600">{stats.totalMinutes}</p>
-              </div>
-              <Clock className="w-8 h-8 text-blue-400" />
-            </div>
-          </div>
-          <div className="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-sm">Level</p>
-                <p className="text-2xl font-bold text-purple-600">{stats.level}</p>
-              </div>
-              <Award className="w-8 h-8 text-purple-400" />
-            </div>
-          </div>
-        </div>
-
-        {/* Challenges Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {challenges.map((challenge) => {
-            const progress = challenge.userProgress?.current_progress || 0;
-            const target = challenge.target_value;
-            const isCompleted = challenge.userProgress?.status === 'completed';
-            const isInProgress = challenge.userProgress?.status === 'in_progress';
-            const progressPercent = getProgressPercentage(challenge);
-
-            return (
-              <div key={challenge.id} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                <div className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="text-4xl">{challenge.icon || '🎙️'}</div>
-                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getDifficultyColor(challenge.difficulty)}`}>
-                      {challenge.difficulty}
-                    </span>
-                  </div>
-
-                  <h3 className="text-xl font-bold text-gray-800 mb-2">{challenge.title}</h3>
-                  <p className="text-gray-600 text-sm mb-4">{challenge.description}</p>
-
-                  <div className="space-y-3 mb-4">
-                    <div className="flex items-center justify-between text-sm">
-                      <div className="flex items-center gap-2 text-gray-600">
-                        <Target className="w-4 h-4" />
-                        <span>Target</span>
-                      </div>
-                      <span className="font-semibold text-gray-800">
-                        {target} {challenge.unit}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between text-sm">
-                      <div className="flex items-center gap-2 text-gray-600">
-                        <Award className="w-4 h-4" />
-                        <span>Reward</span>
-                      </div>
-                      <span className="font-semibold text-yellow-600">
-                        {challenge.points} points
-                      </span>
-                    </div>
-
-                    {isInProgress && (
-                      <div className="flex items-center justify-between text-sm">
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <TrendingUp className="w-4 h-4" />
-                          <span>Progress</span>
-                        </div>
-                        <span className="font-semibold text-blue-600">
-                          {progress} / {target} {challenge.unit}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  {isInProgress && (
-                    <div className="mb-4">
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div
-                          className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-500"
-                          style={{ width: `${progressPercent}%` }}
-                        />
-                      </div>
-                      <p className="text-xs text-gray-500 mt-1 text-right">
-                        {Math.round(progressPercent)}% complete
-                      </p>
-                    </div>
-                  )}
-
-                  {challenge.tip && (
-                    <div className="bg-blue-50 rounded-lg p-3 mb-4">
-                      <p className="text-xs text-blue-800">
-                        💡 <span className="font-semibold">Tip:</span> {challenge.tip}
-                      </p>
-                    </div>
-                  )}
-
-                  {!isCompleted ? (
-                    !isInProgress ? (
-                      <button
-                        onClick={() => handleStartChallenge(challenge.id)}
-                        className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-2 px-4 rounded-lg font-semibold hover:from-blue-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 flex items-center justify-center gap-2"
-                      >
-                        <PlayCircle className="w-5 h-5" />
-                        Start Challenge
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => setProgressUpdate({ show: true, challengeId: challenge.id, progress })}
-                        className="w-full bg-gradient-to-r from-green-500 to-teal-500 text-white py-2 px-4 rounded-lg font-semibold hover:from-green-600 hover:to-teal-600 transition-all duration-300 flex items-center justify-center gap-2"
-                      >
-                        <TrendingUp className="w-5 h-5" />
-                        Update Progress
-                      </button>
-                    )
-                  ) : (
-                    <div className="w-full bg-gradient-to-r from-green-100 to-teal-100 text-green-700 py-2 px-4 rounded-lg font-semibold text-center flex items-center justify-center gap-2">
-                      <CheckCircle className="w-5 h-5" />
-                      Completed! +{challenge.points} pts
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Call Modal for Challenge Practice */}
-        {showCallModal && selectedChallenge && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-bold text-gray-800">Practice Challenge</h2>
-                <button onClick={cancelFindPartner} className="p-1 hover:bg-gray-100 rounded-lg">
-                  <X className="w-6 h-6 text-gray-500" />
-                </button>
-              </div>
-              
-              <div className="text-center mb-6">
-                <div className="text-5xl mb-3">{selectedChallenge.icon || '🎙️'}</div>
-                <h3 className="text-xl font-bold mb-2">{selectedChallenge.title}</h3>
-                <p className="text-gray-600 mb-4">{selectedChallenge.description}</p>
-                <div className="bg-purple-100 rounded-lg p-3 mb-4">
-                  <p className="text-purple-800 font-semibold">Goal: {selectedChallenge.target_value} {selectedChallenge.unit}</p>
-                  <p className="text-purple-600 text-sm">Reward: {selectedChallenge.points} points</p>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <button
-                  onClick={findPracticePartner}
-                  className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-purple-700 transition flex items-center justify-center gap-2"
-                >
-                  <Video className="w-5 h-5" />
-                  Find Practice Partner
-                </button>
-                <button
-                  onClick={cancelFindPartner}
-                  className="w-full bg-gray-500 text-white py-3 rounded-lg font-semibold hover:bg-gray-600 transition"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Progress Update Modal */}
-        {progressUpdate.show && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4">
-              <h2 className="text-2xl font-bold text-gray-800 mb-4">Update Progress</h2>
-              <p className="text-gray-600 mb-4">How many minutes have you practiced?</p>
-              <input
-                type="number"
-                value={progressUpdate.progress}
-                onChange={(e) => setProgressUpdate({ ...progressUpdate, progress: parseInt(e.target.value) || 0 })}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 mb-4 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                placeholder="Enter minutes"
-                min="0"
-              />
-              <div className="flex gap-3">
-                <button
-                  onClick={() => handleUpdateProgress(progressUpdate.challengeId, progressUpdate.progress)}
-                  className="flex-1 bg-green-500 text-white py-2 rounded-lg font-semibold hover:bg-green-600 transition"
-                >
-                  Update
-                </button>
-                <button
-                  onClick={() => setProgressUpdate({ show: false, challengeId: null, progress: 0 })}
-                  className="flex-1 bg-gray-500 text-white py-2 rounded-lg font-semibold hover:bg-gray-600 transition"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
-
-export default Challenges;
+// Get challenge progress stats
+app.get('/api/challenges/progress', authMiddleware, async (req, res) => {
+  try {
+    const completed = await allQuery(
+      'SELECT * FROM user_challenges WHERE user_id = ? AND status = "completed"',
+      [req.user.id]
+    );
+    
+    const totalPoints = completed.reduce((sum, c) => sum + (c.score || 0), 0);
+    const totalMinutes = completed.reduce((sum, c) => sum + (c.current_progress || 0), 0);
+    
+    // Calculate level
+    let level = 'Beginner';
+    if (totalPoints >= 5000) level = 'Master';
+    else if (totalPoints >= 2000) level = 'Expert';
+    else if (totalPoints >= 1000) level = 'Advanced';
+    else if (totalPoints >= 500) level = 'Intermediate';
+    else if (totalPoints >= 100) level = 'Bronze';
+    
+    res.json({
+      success: true,
+      stats: {
+        totalCompleted: completed.length,
+        totalPoints: totalPoints,
+        currentStreak: req.user.streak || 0,
+        totalMinutes: totalMinutes,
+        level: level
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
