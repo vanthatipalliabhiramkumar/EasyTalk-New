@@ -12,6 +12,18 @@ export const useSocket = () => {
   return context;
 };
 
+// ==================== SOCKET URL CONFIGURATION ====================
+const getSocketUrl = () => {
+  if (process.env.NODE_ENV === 'production') {
+    return 'https://easytalk-new.onrender.com';
+  }
+  return 'http://localhost:5000';
+};
+
+const SOCKET_URL = getSocketUrl();
+
+console.log(`🔌 Socket configured with URL: ${SOCKET_URL}`);
+
 export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
@@ -22,15 +34,15 @@ export const SocketProvider = ({ children }) => {
     if (!user) return;
 
     console.log('🔌 Creating socket connection for user:', user.name, 'ID:', user.id);
+    console.log('📡 Connecting to socket URL:', SOCKET_URL);
 
-    //const socketUrl = 'http://localhost:5000';
-    //const socketUrl = import.meta.env.VITE_API_URL;
-    const socketUrl = import.meta.env.VITE_SOCKET_URL;
-    const newSocket = io(socketUrl, {
+    const newSocket = io(SOCKET_URL, {
       transports: ['websocket', 'polling'],
       reconnection: true,
       reconnectionAttempts: 10,
-      reconnectionDelay: 1000
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      timeout: 20000
     });
 
     newSocket.on('connect', () => {
@@ -51,12 +63,13 @@ export const SocketProvider = ({ children }) => {
 
     newSocket.on('connect_error', (error) => {
       console.error('Socket connection error:', error);
+      console.error('Failed URL:', SOCKET_URL);
       setIsConnected(false);
     });
 
     newSocket.on('online_users', (users) => {
-      console.log('📡 Online users updated:', users.length);
-      setOnlineUsers(users);
+      console.log('📡 Online users updated:', users?.length || 0);
+      setOnlineUsers(users || []);
     });
 
     // Add these event listeners only when socket exists
