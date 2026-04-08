@@ -49,13 +49,7 @@ db.serialize(() => {
     total_calls INTEGER DEFAULT 0,
     total_messages INTEGER DEFAULT 0,
     points INTEGER DEFAULT 0,
-    email_verified INTEGER DEFAULT 0,
-    verification_token TEXT,
-    reset_token TEXT,
-    reset_token_expiry DATETIME,
-    last_active DATETIME,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   )`);
 
   // ========== MESSAGES TABLE ==========
@@ -65,27 +59,20 @@ db.serialize(() => {
     receiver_id TEXT NOT NULL,
     content TEXT NOT NULL,
     is_read INTEGER DEFAULT 0,
-    is_delivered INTEGER DEFAULT 0,
-    read_at DATETIME,
-    delivered_at DATETIME,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   )`);
 
-  // ========== CHALLENGES TABLE ==========
+  // ========== CHALLENGES TABLE (SIMPLIFIED - WORKING) ==========
   db.run(`CREATE TABLE IF NOT EXISTS challenges (
     id TEXT PRIMARY KEY,
     title TEXT NOT NULL,
-    description TEXT NOT NULL,
+    description TEXT,
     target_value INTEGER DEFAULT 20,
     unit TEXT DEFAULT 'minutes',
     points INTEGER DEFAULT 100,
     difficulty TEXT DEFAULT 'beginner',
     icon TEXT DEFAULT '🎙️',
     tip TEXT,
-    category TEXT DEFAULT 'speaking',
-    is_daily INTEGER DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   )`);
 
@@ -96,15 +83,11 @@ db.serialize(() => {
     challenge_id TEXT NOT NULL,
     current_progress INTEGER DEFAULT 0,
     status TEXT DEFAULT 'not_started',
-    response TEXT,
     score INTEGER DEFAULT 0,
-    feedback TEXT,
     started_at DATETIME,
     completed_at DATETIME,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(user_id, challenge_id),
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (challenge_id) REFERENCES challenges(id) ON DELETE CASCADE
+    UNIQUE(user_id, challenge_id)
   )`);
 
   // ========== AI CONVERSATIONS TABLE ==========
@@ -114,8 +97,7 @@ db.serialize(() => {
     title TEXT,
     messages TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
   )`);
 
   // ========== CALL HISTORY TABLE ==========
@@ -128,51 +110,44 @@ db.serialize(() => {
     status TEXT DEFAULT 'missed',
     started_at DATETIME,
     ended_at DATETIME,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (caller_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   )`);
 
-  // ========== FRIENDS TABLE ==========
-  db.run(`CREATE TABLE IF NOT EXISTS friends (
-    id TEXT PRIMARY KEY,
-    user_id TEXT NOT NULL,
-    friend_id TEXT NOT NULL,
-    status TEXT DEFAULT 'pending',
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(user_id, friend_id),
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (friend_id) REFERENCES users(id) ON DELETE CASCADE
-  )`);
+  // ========== FIX FOR EXISTING DATABASE - ADD MISSING COLUMNS ==========
+  // This ensures existing databases get the new columns without errors
+  db.run(`ALTER TABLE challenges ADD COLUMN target_value INTEGER DEFAULT 20`, (err) => {
+    if (err && !err.message.includes('duplicate column name')) {
+      // Column already exists or other error - ignore
+    }
+  });
+  db.run(`ALTER TABLE challenges ADD COLUMN unit TEXT DEFAULT 'minutes'`, (err) => {
+    if (err && !err.message.includes('duplicate column name')) {
+      // Column already exists or other error - ignore
+    }
+  });
+  db.run(`ALTER TABLE challenges ADD COLUMN icon TEXT DEFAULT '🎙️'`, (err) => {
+    if (err && !err.message.includes('duplicate column name')) {
+      // Column already exists or other error - ignore
+    }
+  });
+  db.run(`ALTER TABLE challenges ADD COLUMN tip TEXT`, (err) => {
+    if (err && !err.message.includes('duplicate column name')) {
+      // Column already exists or other error - ignore
+    }
+  });
 
-  // ========== NOTIFICATIONS TABLE ==========
-  db.run(`CREATE TABLE IF NOT EXISTS notifications (
-    id TEXT PRIMARY KEY,
-    user_id TEXT NOT NULL,
-    title TEXT NOT NULL,
-    message TEXT NOT NULL,
-    type TEXT DEFAULT 'info',
-    is_read INTEGER DEFAULT 0,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-  )`);
-
-  // ========== INSERT DEFAULT CHALLENGES ==========
+  // ========== INSERT DEFAULT CHALLENGES (3 CHALLENGES ONLY) ==========
   db.get("SELECT COUNT(*) as count FROM challenges", (err, row) => {
     if (!err && row && row.count === 0) {
       const challenges = [
-        ['ch_1', 'Talk for 20 Minutes', 'Practice speaking English continuously for 20 minutes. This beginner-friendly challenge helps build your confidence in everyday conversations.', 20, 'minutes', 100, 'beginner', '🎙️', 'Start with simple topics like your daily routine, hobbies, or favorite movies. Don\'t worry about mistakes - just keep talking!', 'speaking', 1],
-        ['ch_2', 'Talk for 45 Minutes', 'Take your speaking skills to the next level with 45 minutes of continuous English conversation. Perfect for intermediate learners.', 45, 'minutes', 200, 'intermediate', '🎤', 'Discuss current events, share opinions, or tell a story. Try to use new vocabulary words you\'ve learned.', 'speaking', 0],
-        ['ch_3', 'Talk for 90 Minutes', 'Master advanced fluency with 90 minutes of deep conversation. This challenge is for confident speakers ready to level up.', 90, 'minutes', 350, 'advanced', '🎧', 'Have deep conversations about philosophy, technology, or your life experiences. Focus on expressing complex ideas clearly.', 'speaking', 0],
-        ['ch_4', 'Grammar Master: Present Tense', 'Practice using present simple and present continuous tense correctly in conversation.', 15, 'minutes', 80, 'beginner', '📚', 'Use sentences like "I study English daily" and "I am learning right now".', 'grammar', 0],
-        ['ch_5', 'Vocabulary Builder: 50 Words', 'Learn and use 50 new vocabulary words in context during your conversation.', 30, 'minutes', 150, 'intermediate', '📖', 'Keep a list of new words and try to use each one at least once.', 'vocabulary', 0],
-        ['ch_6', 'Pronunciation Perfection', 'Focus on perfecting your pronunciation of difficult sounds like "th", "r", and "l".', 25, 'minutes', 120, 'intermediate', '🎤', 'Practice words like "think", "through", "world", and "literally".', 'pronunciation', 0]
+        ['ch_1', 'Talk for 20 Minutes', 'Practice speaking English continuously for 20 minutes', 20, 'minutes', 100, 'beginner', '🎙️', 'Talk about your daily routine, hobbies, or favorite memories'],
+        ['ch_2', 'Talk for 45 Minutes', 'Take your speaking skills to the next level with 45 minutes of practice', 45, 'minutes', 200, 'intermediate', '🎤', 'Discuss current events, opinions, or share a story'],
+        ['ch_3', 'Talk for 90 Minutes', 'Master advanced fluency with 90 minutes of speaking', 90, 'minutes', 350, 'advanced', '🎧', 'Have deep conversations about philosophy or technology']
       ];
-      const stmt = db.prepare(`INSERT INTO challenges (id, title, description, target_value, unit, points, difficulty, icon, tip, category, is_daily) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
+      const stmt = db.prepare(`INSERT INTO challenges (id, title, description, target_value, unit, points, difficulty, icon, tip) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`);
       challenges.forEach(c => stmt.run(c));
       stmt.finalize();
-      console.log('✅ 6 Default challenges inserted');
+      console.log('✅ 3 Default challenges inserted');
     }
   });
 });
