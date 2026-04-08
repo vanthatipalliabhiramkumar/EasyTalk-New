@@ -1,0 +1,41 @@
+services:
+  - type: web
+    name: easytalk-backend
+    runtime: node
+    plan: free
+    rootDir: server
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_VERSION
+        value: 18.17.0
+      - key: JWT_SECRET
+        generateValue: true
+      - key: PORT
+        value: 5000
+      - key: NODE_ENV
+        value: production
+    healthCheckPath: /api/test
+    autoDeploy: true
+
+  - type: web
+    name: easytalk-frontend
+    runtime: static
+    rootDir: client
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    envVars:
+      - key: NODE_VERSION
+        value: 18.17.0
+      - key: VITE_API_URL
+        value: https://easytalk-backend.onrender.com
+      - key: VITE_SOCKET_URL
+        value: https://easytalk-backend.onrender.com
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: no-cache
