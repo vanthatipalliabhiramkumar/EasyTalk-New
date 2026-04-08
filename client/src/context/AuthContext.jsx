@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -12,10 +13,21 @@ export const useAuth = () => {
   return context;
 };
 
+// ==================== API URL CONFIGURATION ====================
+const getApiUrl = () => {
+  if (process.env.NODE_ENV === 'production') {
+    return 'https://easytalk-new.onrender.com';
+  }
+  return 'http://localhost:5000';
+};
+
+const API_URL = getApiUrl();
+
 // Configure axios
-//axios.defaults.baseURL = 'http://localhost:5000';
-axios.defaults.baseURL = import.meta.env.VITE_API_URL;
+axios.defaults.baseURL = API_URL;
 axios.defaults.headers.common['Content-Type'] = 'application/json';
+
+console.log(`🔧 Axios configured with baseURL: ${API_URL}`);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -34,54 +46,41 @@ export const AuthProvider = ({ children }) => {
   }, [token]);
 
   // Load user on initial load
-   useEffect(() => {
-     if (token) {
-     loadUser();
-     } else {
-       setLoading(false);
-     }
-  }, [token]);
   useEffect(() => {
-  setLoading(false);   // TEMP FIX
-}, []);
-
-   // const loadUser = async () => {
-   //   try {
-   //     const response = await axios.get('/api/auth/me');
-   //     const userData = response.data.user;
-   //     console.log('✅ User loaded from server:', userData);
-   //     setUser(userData);
-   //   } catch (error) {
-  //     console.error('Load user error:', error.response?.data || error.message);
-  //     localStorage.removeItem('token');
-  //     setToken(null);
-  //     setUser(null);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-  const loadUser = async () => {
-  try {
-    const response = await axios.get('/api/auth/me');
-
-    if (!response?.data?.user) {
-      console.log("No user data");
-      return;
+    if (token) {
+      loadUser();
+    } else {
+      setLoading(false);
     }
+  }, [token]);
 
-    setUser(response.data.user);
-
-  } catch (error) {
-    console.log("API failed safely");
-    setUser(null);
-  } finally {
-    setLoading(false);
-  }
-};
+  const loadUser = async () => {
+    try {
+      console.log('📡 Loading user from server...');
+      const response = await axios.get('/api/auth/me');
+      
+      if (response?.data?.user) {
+        console.log('✅ User loaded from server:', response.data.user);
+        setUser(response.data.user);
+      } else {
+        console.log('No user data in response');
+        setUser(null);
+      }
+    } catch (error) {
+      console.error('Load user error:', error.response?.data || error.message);
+      localStorage.removeItem('token');
+      setToken(null);
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const register = async (userData) => {
     try {
       console.log('📝 Registering user:', userData.email);
+      console.log('📡 API URL:', API_URL);
+      
       const response = await axios.post('/api/auth/register', {
         name: userData.fullName,
         email: userData.email,
@@ -96,10 +95,12 @@ export const AuthProvider = ({ children }) => {
       setUser(user);
       
       console.log('✅ Registration successful. User data:', user);
+      toast.success(`Welcome to EasyTalk, ${user.name}! 🎉`);
       return { success: true, user };
     } catch (error) {
       console.error('Registration error:', error.response?.data || error.message);
       const message = error.response?.data?.message || 'Registration failed';
+      toast.error(message);
       return { success: false, message };
     }
   };
@@ -107,6 +108,8 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       console.log('🔐 Attempting login:', email);
+      console.log('📡 API URL:', API_URL);
+      
       const response = await axios.post('/api/auth/login', { email, password });
       
       const { token: newToken, user } = response.data;
@@ -116,6 +119,7 @@ export const AuthProvider = ({ children }) => {
       setUser(user);
       
       console.log('✅ Login successful. User data:', user);
+      toast.success(`Welcome back, ${user.name}! 👋`);
       return { success: true, user };
     } catch (error) {
       console.error('Login error:', error.response?.data || error.message);
@@ -124,6 +128,7 @@ export const AuthProvider = ({ children }) => {
       setUser(null);
       
       const message = error.response?.data?.message || 'Login failed. Please check your credentials.';
+      toast.error(message);
       return { success: false, message };
     }
   };
@@ -155,7 +160,8 @@ export const AuthProvider = ({ children }) => {
     login,
     logout,
     updateUser,
-    isAuthenticated: !!user
+    isAuthenticated: !!user,
+    API_URL
   };
 
   return (
@@ -164,3 +170,5 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
+
+export default AuthProvider;
