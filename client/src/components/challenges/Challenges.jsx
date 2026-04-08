@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
@@ -17,38 +16,54 @@ const Challenges = () => {
     totalCompleted: 0,
     totalPoints: 0,
     currentStreak: 0,
-    totalMinutes: 0
+    totalMinutes: 0,
+    level: 'Beginner'
   });
   const [selectedChallenge, setSelectedChallenge] = useState(null);
   const [showCallModal, setShowCallModal] = useState(false);
-  const [callPartner, setCallPartner] = useState(null);
-  const [dailyChallenge, setDailyChallenge] = useState(null);
   const [progressUpdate, setProgressUpdate] = useState({ show: false, challengeId: null, progress: 0 });
 
-  const API_URL = 'http://localhost:5000';
+  // Get the correct API URL based on environment
+  const getApiUrl = () => {
+    // For production (Render)
+    if (process.env.NODE_ENV === 'production') {
+      return 'https://easytalk-new.onrender.com';
+    }
+    // For development (local)
+    return 'http://localhost:5000';
+  };
 
-  // Fetch challenges and progress
+  const API_URL = getApiUrl();
+
+  // Fetch challenges
   const fetchChallenges = useCallback(async () => {
     try {
       const response = await fetch(`${API_URL}/api/challenges`, {
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
       });
       const data = await response.json();
       if (data.success) {
         setChallenges(data.challenges);
-        // Set daily challenge (first incomplete challenge of the day)
-        const incomplete = data.challenges.find(c => c.userProgress?.status !== 'completed');
-        if (incomplete) setDailyChallenge(incomplete);
+      } else {
+        console.error('Failed to fetch challenges:', data.message);
       }
     } catch (error) {
       console.error('Error fetching challenges:', error);
+      toast.error('Failed to load challenges');
     }
-  }, [token]);
+  }, [token, API_URL]);
 
+  // Fetch progress
   const fetchProgress = useCallback(async () => {
     try {
       const response = await fetch(`${API_URL}/api/challenges/progress`, {
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
       });
       const data = await response.json();
       if (data.success) {
@@ -57,10 +72,15 @@ const Challenges = () => {
     } catch (error) {
       console.error('Error fetching progress:', error);
     }
-  }, [token]);
+  }, [token, API_URL]);
 
   useEffect(() => {
-    Promise.all([fetchChallenges(), fetchProgress()]).finally(() => setLoading(false));
+    const loadData = async () => {
+      setLoading(true);
+      await Promise.all([fetchChallenges(), fetchProgress()]);
+      setLoading(false);
+    };
+    loadData();
   }, [fetchChallenges, fetchProgress]);
 
   // Socket listeners for call matching
@@ -70,22 +90,23 @@ const Challenges = () => {
     const handleCallMatchFound = (data) => {
       toast.dismiss('call-queue');
       toast.success(`Matched with ${data.partnerName}! Starting challenge...`);
-      setCallPartner(data);
       // Start the call for challenge
       initiateCall(data.partnerId, 'video', data.partnerName, data.partnerAvatar);
       setShowCallModal(false);
     };
 
-    socket.on('call_match_found', handleCallMatchFound);
-    socket.on('waiting_for_partner', ({ type }) => {
+    const handleWaitingForPartner = ({ type }) => {
       if (type === 'call') {
         toast.loading('Looking for a practice partner...', { id: 'call-queue' });
       }
-    });
+    };
+
+    socket.on('call_match_found', handleCallMatchFound);
+    socket.on('waiting_for_partner', handleWaitingForPartner);
 
     return () => {
       socket.off('call_match_found', handleCallMatchFound);
-      socket.off('waiting_for_partner');
+      socket.off('waiting_for_partner', handleWaitingForPartner);
     };
   }, [socket, initiateCall]);
 
@@ -102,11 +123,15 @@ const Challenges = () => {
       const data = await response.json();
       if (data.success) {
         toast.success('Challenge started! Find a partner to practice with.');
-        setSelectedChallenge(challenges.find(c => c.id === challengeId));
+        const challenge = challenges.find(c => c.id === challengeId);
+        setSelectedChallenge(challenge);
         setShowCallModal(true);
         await fetchChallenges();
+      } else {
+        toast.error(data.message || 'Failed to start challenge');
       }
     } catch (error) {
+      console.error('Error starting challenge:', error);
       toast.error('Failed to start challenge');
     }
   };
@@ -134,6 +159,7 @@ const Challenges = () => {
         setProgressUpdate({ show: false, challengeId: null, progress: 0 });
       }
     } catch (error) {
+      console.error('Error updating progress:', error);
       toast.error('Failed to update progress');
     }
   };
@@ -205,7 +231,7 @@ const Challenges = () => {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
           <div className="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition">
             <div className="flex items-center justify-between">
               <div>
@@ -242,38 +268,16 @@ const Challenges = () => {
               <Clock className="w-8 h-8 text-blue-400" />
             </div>
           </div>
-        </div>
-
-        {/* Daily Challenge Banner */}
-        {dailyChallenge && dailyChallenge.userProgress?.status !== 'completed' && (
-          <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl p-6 mb-8 text-white shadow-lg">
-            <div className="flex items-center justify-between flex-wrap gap-4">
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center text-3xl">
-                  {dailyChallenge.icon || '🎯'}
-                </div>
-                <div>
-                  <p className="text-sm opacity-90">Daily Challenge</p>
-                  <h2 className="text-2xl font-bold">{dailyChallenge.title}</h2>
-                  <p className="text-sm opacity-90">{dailyChallenge.description}</p>
-                </div>
+          <div className="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-500 text-sm">Level</p>
+                <p className="text-2xl font-bold text-purple-600">{stats.level}</p>
               </div>
-              <div className="flex items-center gap-4">
-                <div className="text-center">
-                  <p className="text-sm opacity-90">Reward</p>
-                  <p className="text-xl font-bold">{dailyChallenge.points} pts</p>
-                </div>
-                <button
-                  onClick={() => handleStartChallenge(dailyChallenge.id)}
-                  className="bg-white text-purple-600 px-6 py-2 rounded-lg font-semibold hover:bg-opacity-90 transition flex items-center gap-2"
-                >
-                  <PlayCircle className="w-5 h-5" />
-                  Start Challenge
-                </button>
-              </div>
+              <Award className="w-8 h-8 text-purple-400" />
             </div>
           </div>
-        )}
+        </div>
 
         {/* Challenges Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -286,7 +290,6 @@ const Challenges = () => {
 
             return (
               <div key={challenge.id} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                {/* Challenge Header */}
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div className="text-4xl">{challenge.icon || '🎙️'}</div>
@@ -298,7 +301,6 @@ const Challenges = () => {
                   <h3 className="text-xl font-bold text-gray-800 mb-2">{challenge.title}</h3>
                   <p className="text-gray-600 text-sm mb-4">{challenge.description}</p>
 
-                  {/* Challenge Stats */}
                   <div className="space-y-3 mb-4">
                     <div className="flex items-center justify-between text-sm">
                       <div className="flex items-center gap-2 text-gray-600">
@@ -333,7 +335,6 @@ const Challenges = () => {
                     )}
                   </div>
 
-                  {/* Progress Bar */}
                   {isInProgress && (
                     <div className="mb-4">
                       <div className="w-full bg-gray-200 rounded-full h-2">
@@ -348,7 +349,6 @@ const Challenges = () => {
                     </div>
                   )}
 
-                  {/* Tip */}
                   {challenge.tip && (
                     <div className="bg-blue-50 rounded-lg p-3 mb-4">
                       <p className="text-xs text-blue-800">
@@ -357,7 +357,6 @@ const Challenges = () => {
                     </div>
                   )}
 
-                  {/* Action Button */}
                   {!isCompleted ? (
                     !isInProgress ? (
                       <button
